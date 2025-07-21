@@ -1,98 +1,123 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Virabrequim</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retífica Rondon - Fluxo Digital</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: #f4f4f4;
-    }
-    h1 {
-      text-align: center;
-      background-color: #009688;
-      color: white;
-      padding: 1rem 0;
       margin: 0;
-    }
-    .container {
-      padding: 1rem;
-    }
-    .card {
-      background: white;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .campo {
-      margin-bottom: 0.5rem;
-    }
-    .campo label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 0.25rem;
-    }
-    .campo input, .campo textarea {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    .loading {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
       text-align: center;
-      padding: 2rem;
-      font-size: 1.2rem;
+    }
+    header {
+      background-color: #87CEFA;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    header img {
+      position: absolute;
+      left: 10px;
+      height: 40px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    #empresa-img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: cover;
+    }
+    .login-container {
+      margin-top: 20px;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      width: 80%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4682B4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #315f86;
+    }
+    #painel-btn {
+      display: none;
+      margin-top: 20px;
+    }
+    .mensagem {
+      margin-top: 10px;
+      color: red;
     }
   </style>
 </head>
 <body>
-  <h1>Painel Virabrequim</h1>
-  <div class="container">
-    <div id="painel">
-      <div class="loading">Carregando dados da planilha...</div>
+  <header>
+    <img src="https://drive.google.com/uc?id=1j-KTYHUMZasWhOHshG6EmGpQUexhQ1uh" alt="Logo">
+    <h1>Retífica Rondon - Fluxo Digital</h1>
+  </header>
+
+  <img id="empresa-img" src="https://drive.google.com/uc?id=1IsvBY-nKczHtbqSySt6jAzgxRgd_Yn0h" alt="Imagem da empresa">
+
+  <div class="login-container">
+    <input type="email" id="email" placeholder="Digite seu e-mail" required><br>
+    <input type="password" id="senha" placeholder="Digite a senha" required><br>
+    <button onclick="fazerLogin()">Entrar</button>
+    <div class="mensagem" id="mensagem"></div>
+
+    <div id="painel-btn">
+      <a href="painel.html"><button>Painel Virabrequim</button></a>
     </div>
   </div>
 
   <script>
-    const url = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLg6QBkgVeo74zNk9Xsv94HTg1NbDB_h6NWALgkq9pLFLUeLbEiZ-klXo1XGpnHwKRSbAo1I1WVuFd8OtzkZznkTyYhewLdhseqY9u4NnLXwF-huG7yIW8HK7SLI7yX3owl6wpzmI5BQXv017zY5EMHZiCYeSfurW7vnmiQR0R7XaAZAzmd0JQXFISGVjy_Nqh5S5DY0lMFpKbfCgAsBHpkYx27NBYNTEpQtf0MREUAeIS8RThYeUPz12sE-genwA33OAvUrx4XqK90g3WXGnMugVZDWjaw5StNXao-ljYDnQKd_MhE&lib=MjaoITXJoraydIDf6ziG3VKv1dzvmJfXR";
+    async function fazerLogin() {
+      const email = document.getElementById('email').value.trim();
+      const senha = document.getElementById('senha').value.trim();
+      const mensagem = document.getElementById('mensagem');
+      const painelBtn = document.getElementById('painel-btn');
 
-    async function carregarDados() {
-      try {
-        const resposta = await fetch(url);
-        const dados = await resposta.json();
-        mostrarOS(dados.dados || []);
-      } catch (erro) {
-        document.getElementById("painel").innerHTML = `<div class="loading">Erro ao carregar dados.</div>`;
-        console.error("Erro ao buscar dados:", erro);
-      }
-    }
-
-    function mostrarOS(lista) {
-      const painel = document.getElementById("painel");
-      if (lista.length === 0) {
-        painel.innerHTML = `<div class="loading">Nenhuma OS encontrada.</div>`;
+      if (!email || !senha) {
+        mensagem.textContent = 'Preencha todos os campos.';
         return;
       }
 
-      painel.innerHTML = ""; // Limpar tela
-      lista.forEach((os) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="campo"><label>Nº OS</label><input type="text" value="${os['Nº OS'] || ''}" disabled></div>
-          <div class="campo"><label>Cliente</label><input type="text" value="${os.CLIENTE || ''}" disabled></div>
-          <div class="campo"><label>Tipo</label><input type="text" value="${os.TIPO || ''}" disabled></div>
-          <div class="campo"><label>Status</label><input type="text" value="${os.STATUS || ''}" disabled></div>
-          <div class="campo"><label>Observações</label><textarea rows="3" disabled>${os['OBSERVAÇÕES'] || ''}</textarea></div>
-        `;
-        painel.appendChild(card);
-      });
-    }
+      mensagem.textContent = 'Verificando...';
 
-    carregarDados();
+      try {
+        const url = `https://script.google.com/macros/s/SEU_DEPLOY_ID/exec?email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`;
+        const resposta = await fetch(url);
+        const dados = await resposta.json();
+
+        if (dados.status === "ok") {
+          mensagem.style.color = 'green';
+          mensagem.textContent = 'Acesso autorizado';
+          painelBtn.style.display = 'block';
+        } else {
+          mensagem.style.color = 'red';
+          mensagem.textContent = dados.mensagem || 'Acesso negado.';
+          painelBtn.style.display = 'none';
+        }
+      } catch (erro) {
+        mensagem.style.color = 'red';
+        mensagem.textContent = 'Erro ao conectar com o servidor.';
+      }
+    }
   </script>
 </body>
 </html>
