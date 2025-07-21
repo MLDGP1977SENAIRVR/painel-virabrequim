@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Retífica Rondon</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eaf2f8;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background-color: #007bff;
+      color: white;
+      padding: 1rem;
+    }
+
+    header img {
+      height: 40px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    .container {
+      margin-top: 2rem;
+      padding: 1rem;
+    }
+
+    .login-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .empresa-img {
+      max-width: 90%;
+      margin-top: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo da Empresa" />
+    <span style="font-size: 1.2rem;">Retífica Rondon - Fluxo Digital</span>
+  </header>
+
+  <div class="container">
+    <img class="empresa-img" src="fachada.png" alt="Imagem da empresa" />
+    
+    <div class="login-box">
+      <h2>Acesso ao Sistema</h2>
+      <input type="email" id="email" placeholder="Digite seu e-mail" />
+      <input type="password" id="senha" placeholder="Digite a senha" />
+      <button onclick="login()">Entrar</button>
+    </div>
+  </div>
+
+  <script>
+    function login() {
+      const email = document.getElementById("email").value.trim().toLowerCase();
+      const senha = document.getElementById("senha").value.trim();
+
+      if (!email || !senha) {
+        alert("Preencha o e-mail e a senha.");
+        return;
+      }
+
+      fetch("https://script.google.com/macros/s/AKfycbx6Am4kSm0w_P0rZyNZ__jJyGyoiR8_Yf42hLskerxCjKWWZdsb8s4l54zHljhIbNzGTw/exec", {
+        method: "POST",
+        body: JSON.stringify({ email, senha }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.autorizado) {
+            window.location.href = "painel.html";
+          } else {
+            alert("E-mail ou senha inválidos.");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Erro na verificação. Tente novamente.");
+        });
+    }
+  </script>
+</body>
+</html>
