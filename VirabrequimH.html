@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAINEL DE PRODUÇÃO VIRABREQUIM RVR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1-px rgba(0, 0, 0, 0.06);
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .sector-list li {
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        .button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .refresh-btn {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+        .refresh-btn:hover {
+            background-color: #2563eb;
+        }
+        .logout-btn {
+            background-color: #ef4444;
+            color: #ffffff;
+        }
+        .logout-btn:hover {
+            background-color: #dc2626;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+
+    <!-- Header Section -->
+    <header class="flex flex-col md:flex-row items-center justify-between gap-4 mb-10">
+        <div class="flex items-center gap-4">
+            <!-- Logo from user's provided URL -->
+            <img src="https://raw.githubusercontent.com/MLDGP1977SENAIRVR/painel-virabrequim/main/logo.png" alt="Logo RVR" class="w-16 h-16 object-contain">
+            <h1 class="text-3xl font-bold text-gray-800 text-center md:text-left">PAINEL DE PRODUÇÃO VIRABREQUIM RVR</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="refresh-button" class="button refresh-btn flex items-center gap-2">
+                <span id="refresh-text">Atualizar</span>
+                <span id="countdown"></span>
+            </button>
+            <button id="logout-button" class="button logout-btn">
+                Delogar
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content - Cards Section -->
+    <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Card: Total de OS (Orçamento) -->
+        <div class="card">
+            <h2 class="text-2xl font-bold text-blue-600 text-center">Total de OS (Orçamento)</h2>
+            <p id="orcamento-count" class="text-5xl font-extrabold text-blue-600 text-center">Carregando...</p>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-600 mb-2">OS por Setor:</h3>
+                <ul id="orcamento-setores" class="sector-list list-disc ml-5">
+                    <li>Carregando...</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Card: Total de OS Produção -->
+        <div class="card">
+            <h2 class="text-2xl font-bold text-green-600 text-center">Total de OS Produção</h2>
+            <p id="producao-count" class="text-5xl font-extrabold text-green-600 text-center">Carregando...</p>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-600 mb-2">OS por Setor:</h3>
+                <ul id="producao-setores" class="sector-list list-disc ml-5">
+                    <li>Carregando...</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Card: Total de OS Ativas -->
+        <div class="card">
+            <h2 class="text-2xl font-bold text-purple-600 text-center">Total de OS Ativas</h2>
+            <p id="ativas-count" class="text-5xl font-extrabold text-purple-600 text-center">Carregando...</p>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-600 mb-2">OS por Setor:</h3>
+                <ul id="ativas-setores" class="sector-list list-disc ml-5">
+                    <li>Carregando...</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+    
+    <!-- Operator Status Section -->
+    <section class="mt-10">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Status Geral dos Operadores</h2>
+        <div id="operadores-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Operator cards will be dynamically added here -->
+            <div class="card">
+                <p>Carregando...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Message Box for user feedback -->
+    <div id="message-box" class="mt-8 p-4 rounded-lg text-sm transition-opacity duration-300 opacity-0"></div>
+
+    <script>
+        // URL da sua planilha do Google Apps Script
+        const SPREADSHEET_URL = 'https://script.google.com/macros/s/AKfycbynBnElhDQ2l1AkKZdWShcFkaRLubEiX4cSfA6tkWLbSUqsG_kaYhnOZLQMyN70sJQn/exec';
+        const UPDATE_INTERVAL = 30; // 30 segundos
+        const refreshButton = document.getElementById('refresh-button');
+        const refreshText = document.getElementById('refresh-text');
+        const countdownElement = document.getElementById('countdown');
+        const orcamentoCountEl = document.getElementById('orcamento-count');
+        const producaoCountEl = document.getElementById('producao-count');
+        const ativasCountEl = document.getElementById('ativas-count');
+        const orcamentoSetoresEl = document.getElementById('orcamento-setores');
+        const producaoSetoresEl = document.getElementById('producao-setores');
+        const ativasSetoresEl = document.getElementById('ativas-setores');
+        const operadoresContainerEl = document.getElementById('operadores-container');
+        const messageBox = document.getElementById('message-box');
+
+        let countdown = UPDATE_INTERVAL;
+        let countdownInterval;
+
+        // Função para mostrar uma mensagem na tela
+        const showMessage = (message, type) => {
+            messageBox.textContent = message;
+            messageBox.classList.remove('opacity-0', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'text-red-800', 'opacity-100');
+            } else if (type === 'success') {
+                messageBox.classList.add('bg-green-100', 'text-green-800', 'opacity-100');
+            }
+        };
+
+        // Função para simular o "Delogar"
+        document.getElementById('logout-button').addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        // Função para buscar dados da planilha
+        const fetchData = async () => {
+            try {
+                // Estado de carregamento
+                refreshButton.disabled = true;
+                refreshText.textContent = 'Atualizando...';
+                refreshText.classList.add('flex', 'items-center', 'gap-2');
+                refreshText.innerHTML = `<span class="spinner"></span> Atualizando...`;
+                messageBox.classList.remove('opacity-100');
+                const allCards = [orcamentoCountEl, producaoCountEl, ativasCountEl, orcamentoSetoresEl, producaoSetoresEl, ativasSetoresEl];
+                allCards.forEach(el => {
+                    el.textContent = 'Carregando...';
+                    if (el.tagName === 'UL') el.innerHTML = '<li>Carregando...</li>';
+                });
+                operadoresContainerEl.innerHTML = '<div class="card"><p>Carregando...</p></div>';
+
+                const response = await fetch(SPREADSHEET_URL);
+                if (!response.ok) {
+                    throw new Error(`Erro na rede: ${response.statusText}`);
+                }
+                const data = await response.json();
+                processData(data);
+                showMessage('Dados atualizados com sucesso!', 'success');
+            } catch (error) {
+                console.error("Falha ao buscar dados:", error);
+                showMessage('Não foi possível carregar os dados. Verifique a URL da planilha ou a configuração de CORS no Google Apps Script.', 'error');
+            } finally {
+                // Restaura o estado do botão
+                refreshButton.disabled = false;
+                refreshText.innerHTML = `Atualizar`;
+            }
+        };
+
+        // Função para processar os dados e atualizar a UI
+        const processData = (data) => {
+            // Assumimos que a primeira linha são os cabeçalhos
+            const osData = data.slice(1);
+            
+            // Contadores
+            let totalOrcamentoCount = 0;
+            let totalProducaoCount = 0;
+            const orcamentoSetores = {};
+            const producaoSetores = {};
+            const ativasSetores = {};
+            const operadoresData = {};
+
+            osData.forEach(row => {
+                const statusFinalizacao = row[13] || '';
+                const statusOrcamento = row[8] || '';
+                const setor = row[9] || 'Sem Setor';
+                const operador = (row[17] || 'Sem Operador').trim() || 'Sem Operador';
+                const prioridade = (row[14] || 'Sem Prioridade').trim();
+
+                // Inicializa o objeto do operador se ele não existir e adiciona o contador total
+                if (!operadoresData[operador]) {
+                    operadoresData[operador] = {
+                        total: 0,
+                        producao: 0,
+                        orcamento: 0,
+                        prioridades: {
+                            'Hoje': 0,
+                            'Alta': 0,
+                            'Média': 0,
+                            'Baixa': 0
+                        }
+                    };
+                }
+                operadoresData[operador].total++;
+
+                // Verifica se a OS está ativa (não finalizada)
+                if (statusFinalizacao.trim().toLowerCase() !== 'finalizado ok' && statusFinalizacao.trim().toLowerCase() !== 'orçamento ok') {
+                    // Update Ativas by Sector
+                    ativasSetores[setor] = (ativasSetores[setor] || 0) + 1;
+
+                    if (statusOrcamento.toLowerCase().includes('orçamento')) {
+                        totalOrcamentoCount++;
+                        orcamentoSetores[setor] = (orcamentoSetores[setor] || 0) + 1;
+                        operadoresData[operador].orcamento++;
+                    } else {
+                        totalProducaoCount++;
+                        producaoSetores[setor] = (producaoSetores[setor] || 0) + 1;
+                        operadoresData[operador].producao++;
+                    }
+
+                    if (prioridade in operadoresData[operador].prioridades) {
+                        operadoresData[operador].prioridades[prioridade]++;
+                    }
+                }
+            });
+            
+            const totalAtivasCount = Object.values(ativasSetores).reduce((sum, count) => sum + count, 0);
+
+            updateUI({
+                totalAtivasCount,
+                totalOrcamentoCount,
+                totalProducaoCount,
+                orcamentoSetores,
+                producaoSetores,
+                ativasSetores,
+                operadoresData
+            });
+        };
+
+        // Função para atualizar os elementos na página
+        const updateUI = ({ totalAtivasCount, totalOrcamentoCount, totalProducaoCount, orcamentoSetores, producaoSetores, ativasSetores, operadoresData }) => {
+            ativasCountEl.textContent = totalAtivasCount;
+            orcamentoCountEl.textContent = totalOrcamentoCount;
+            producaoCountEl.textContent = totalProducaoCount;
+
+            // Limpa as listas e preenche com os novos dados
+            orcamentoSetoresEl.innerHTML = '';
+            Object.keys(orcamentoSetores).forEach(setor => {
+                const li = document.createElement('li');
+                li.textContent = `${setor}: ${orcamentoSetores[setor]}`;
+                orcamentoSetoresEl.appendChild(li);
+            });
+            if (Object.keys(orcamentoSetores).length === 0) {
+                orcamentoSetoresEl.innerHTML = '<li>Nenhuma OS de orçamento encontrada.</li>';
+            }
+
+            producaoSetoresEl.innerHTML = '';
+            Object.keys(producaoSetores).forEach(setor => {
+                const li = document.createElement('li');
+                li.textContent = `${setor}: ${producaoSetores[setor]}`;
+                producaoSetoresEl.appendChild(li);
+            });
+            if (Object.keys(producaoSetores).length === 0) {
+                producaoSetoresEl.innerHTML = '<li>Nenhuma OS de produção encontrada.</li>';
+            }
+            
+            // Adiciona a lista de setores para OS Ativas
+            ativasSetoresEl.innerHTML = '';
+            Object.keys(ativasSetores).forEach(setor => {
+                const li = document.createElement('li');
+                li.textContent = `${setor}: ${ativasSetores[setor]}`;
+                ativasSetoresEl.appendChild(li);
+            });
+            if (Object.keys(ativasSetores).length === 0) {
+                ativasSetoresEl.innerHTML = '<li>Nenhuma OS ativa encontrada.</li>';
+            }
+
+            // Populates operator cards
+            operadoresContainerEl.innerHTML = '';
+            if (Object.keys(operadoresData).length === 0) {
+                operadoresContainerEl.innerHTML = '<div class="card"><p>Nenhum operador encontrado.</p></div>';
+            } else {
+                Object.keys(operadoresData).forEach(operador => {
+                    const data = operadoresData[operador];
+                    const prioridadesHtml = `
+                        <div class="grid grid-cols-2 gap-x-4">
+                            <div>
+                                <p class="text-sm mb-1">
+                                    <span class="font-bold text-red-500">${data.prioridades['Hoje']}</span> Hoje
+                                </p>
+                                <p class="text-sm">
+                                    <span class="font-bold text-yellow-500">${data.prioridades['Alta']}</span> Alta
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm mb-1">
+                                    <span class="font-bold text-gray-500">${data.prioridades['Média']}</span> Média
+                                </p>
+                                <p class="text-sm">
+                                    <span class="font-bold text-gray-500">${data.prioridades['Baixa']}</span> Baixa
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const cardHtml = `
+                        <div class="card">
+                            <h3 class="text-xl font-bold text-gray-700 text-center">${operador}</h3>
+                            <h4 class="text-sm font-semibold text-gray-500 text-center mb-4">Volume Total de OS: <span class="text-gray-800 font-bold">${data.total}</span></h4>
+                            <div class="flex flex-col items-center justify-center gap-2 text-center text-sm">
+                                <h4 class="text-md font-semibold text-gray-600">Abertas:</h4>
+                                <div class="flex items-center justify-center gap-4">
+                                    <p>
+                                        <span class="font-bold text-green-600">${data.producao}</span> OS Produção
+                                    </p>
+                                    <p>|</p>
+                                    <p>
+                                        <span class="font-bold text-blue-600">${data.orcamento}</span> OS Orçamento
+                                    </p>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-md font-semibold text-gray-600 mb-1">Prioridade:</h4>
+                                ${prioridadesHtml}
+                            </div>
+                        </div>
+                    `;
+                    operadoresContainerEl.innerHTML += cardHtml;
+                });
+            }
+        };
+
+        // Função para iniciar a contagem regressiva
+        const startAutoUpdate = () => {
+            clearInterval(countdownInterval); // Garante que não há múltiplos intervalos
+            countdown = UPDATE_INTERVAL;
+            countdownElement.textContent = `(${countdown}s)`;
+            countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = `(${countdown}s)`;
+                if (countdown <= 0) {
+                    fetchData();
+                    countdown = UPDATE_INTERVAL;
+                }
+            }, 1000);
+        };
+
+        // Event listener para o botão de atualização manual
+        refreshButton.addEventListener('click', fetchData);
+
+        // Inicia o carregamento e a contagem regressiva na primeira vez
+        fetchData();
+        startAutoUpdate();
+    </script>
+</body>
+</html>
